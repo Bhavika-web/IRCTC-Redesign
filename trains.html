@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRCTC Train Booking Frontend</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        /* Custom styles for smooth dynamic background and theme transition */
+        .fullness-bg-transition { transition: background-color 1.5s ease-in-out; }
+        .theme-transition { transition: background-color 0.3s, color 0.3s; }
+        
+        /* Dark mode settings */
+        .dark body {
+            background-color: #1a1a2e; /* Dark theme background */
+            color: #e4e6eb;
+        }
+        .dark .bg-white {
+            background-color: #2c2c48 !important; /* Darker surfaces */
+        }
+        .dark .text-gray-800 { color: #e4e6eb; }
+        .dark .text-gray-700 { color: #c4c4c9; }
+        .dark .text-gray-500 { color: #a0a0a0; }
+        .dark .border-gray-300, .dark .border-gray-200 { border-color: #444466; }
+        .dark .shadow-xl { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
+        .dark .bg-gray-50, .dark .bg-blue-50 { background-color: #38385e !important; }
+
+        /* Dark mode input styling */
+        .dark input {
+            background-color: #38385e !important;
+            border-color: #555577 !important;
+            color: #e4e6eb !important;
+        }
+
+        /* IRCTC Primary Red */
+        .bg-irctc-red { background-color: #d90000; }
+        .hover:bg-irctc-red-dark:hover { background-color: #a30000; }
+        .text-irctc-red { color: #d90000; }
+
+        /* --- Visually Dynamic Seat Map Styling --- */
+        .seat-item { 
+            /* Springy transition for dynamic feel */
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); 
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .seat-item:hover { 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); 
+            transform: scale(1.08); 
+        }
+        
+        /* Available Seat (Vibrant Green/Blue) */
+        .seat-available { 
+            background-color: #4ade80; 
+            box-shadow: 0 4px 10px rgba(74, 222, 128, 0.5);
+        }
+        .seat-available:hover {
+            background-color: #10b981;
+        }
+        .dark .seat-available {
+             background-color: #2563eb;
+             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5);
+        }
+        .dark .seat-available:hover {
+             background-color: #3b82f6;
+        }
+
+        /* Booked Seat (Soft Red, no interaction) */
+        .seat-booked { 
+            background-color: #fca5a5; 
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+        .dark .seat-booked {
+            background-color: #b91c1c;
+            opacity: 0.6;
+        }
+
+        /* Selected Seat (Bright Yellow, Animated) */
+        .seat-selected { 
+            background-color: #fbbf24; 
+            box-shadow: 0 0 0 6px rgba(253, 230, 138, 0.8), 0 10px 20px rgba(251, 191, 36, 0.8); 
+            transform: scale(1.15); 
+            z-index: 10;
+        }
+        .dark .seat-selected {
+            background-color: #eab308;
+            box-shadow: 0 0 0 6px rgba(254, 243, 199, 0.5), 0 10px 20px rgba(234, 179, 8, 0.9); 
+        }
+
+        /* Animated shimmer for selected train card */
+        .selected-train-card {
+            background: linear-gradient(90deg, #fff 0%, #ffebeb 50%, #fff 100%);
+            background-size: 300% 100%;
+            animation: shimmer 4s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -300% 0; }
+            100% { background-position: 300% 0; }
+        }
+        .dark .selected-train-card {
+            background: linear-gradient(90deg, #38385e 0%, #4f4f7a 50%, #38385e 100%);
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-gray-50 font-sans antialiased fullness-bg-transition text-gray-800 theme-transition">
+
+    <div class="container mx-auto p-0 md:p-8">
+
+        <!-- Top Navigation Bar -->
+        <nav id="nav-bar" class="bg-irctc-red text-white shadow-2xl sticky top-0 z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-4">
+                    <svg viewBox="0 0 24 24" class="h-8 w-8 fill-current" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="#fff"/>
+                        <path d="M13 14h-2v-4h2v4zm-2 2h2v2h-2v-2z" fill="#d90000"/>
+                    </svg>
+                    <span class="text-xl font-extrabold" id="nav-brand-title">IRCTC Frontend</span>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-8">
+                    <a href="#" class="nav-link text-sm font-medium border-b-2 border-transparent hover:border-white pb-1 transition duration-150 ease-in-out flex items-center" data-key="homepage">
+                        <i data-lucide="home" class="w-5 h-5 mr-1"></i> Home
+                    </a>
+                    <a href="#" class="nav-link text-sm font-medium border-b-2 border-transparent hover:border-white pb-1 transition duration-150 ease-in-out flex items-center" data-key="pnrStatus">
+                        <i data-lucide="ticket" class="w-5 h-5 mr-1"></i> PNR Status
+                    </a>
+                    <a href="#" class="nav-link text-sm font-medium border-b-2 border-transparent hover:border-white pb-1 transition duration-150 ease-in-out flex items-center" data-key="contactUs">
+                        <i data-lucide="phone" class="w-5 h-5 mr-1"></i> Contact Us
+                    </a>
+                </div>
+                
+                <!-- Controls (Language/Theme) -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <select id="lang-select" class="px-2 py-1 bg-irctc-red-dark hover:bg-irctc-red-dark text-white rounded-lg text-sm font-medium cursor-pointer focus:ring-2 focus:ring-white">
+                        <option value="en">English (EN)</option>
+                        <option value="hi">Hindi (HI)</option>
+                        <option value="gu">Gujarati (GU)</option>
+                    </select>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-full text-white hover:bg-irctc-red-dark transition duration-200 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle dark mode">
+                        <i data-lucide="sun" id="theme-icon" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Header & Search Form -->
+        <header class="bg-white dark:bg-2c2c48 p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col items-center justify-center -mt-2 relative z-10 mx-4 md:mx-0 theme-transition border-t-4 border-irctc-red">
+            <h1 class="text-4xl font-extrabold text-irctc-red flex items-center mb-6">
+                <i data-lucide="train-front" class="h-10 w-10 mr-3"></i>
+                <span data-key="appTitle">IRCTC Frontend</span>
+            </h1>
+            <form id="search-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 w-full max-w-5xl">
+                <!-- Origin -->
+                <input type="text" id="origin-input" data-key-placeholder="from" placeholder="From (e.g., Pune)" class="col-span-1 px-4 py-3 border border-gray-300 dark:border-444466 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition shadow-inner dark:bg-38385e dark:text-e4e6eb" />
+                <!-- Destination -->
+                <input type="text" id="destination-input" data-key-placeholder="to" placeholder="To (e.g., Mumbai)" class="col-span-1 px-4 py-3 border border-gray-300 dark:border-444466 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition shadow-inner dark:bg-38385e dark:text-e4e6eb" />
+                <!-- Date -->
+                <input type="date" id="date-input" data-key-placeholder="date" class="col-span-1 px-4 py-3 border border-gray-300 dark:border-444466 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition shadow-inner dark:bg-38385e dark:text-e4e6eb" />
+                <!-- Time (Optional) -->
+                <input type="time" id="time-input" data-key-placeholder="time" class="col-span-1 px-4 py-3 border border-gray-300 dark:border-444466 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition shadow-inner dark:bg-38385e dark:text-e4e6eb" />
+                <!-- Search Button -->
+                <button type="submit" data-key="findTrains" class="col-span-1 px-6 py-3 bg-irctc-red text-white font-bold rounded-xl shadow-lg hover:bg-irctc-red-dark transition transform hover:scale-[1.02] active:scale-[0.98] ring-4 ring-red-300/50">
+                    Find Trains
+                </button>
+            </form>
+            <div id="status-message" class="mt-4 text-sm text-center text-green-600 dark:text-green-400 font-semibold hidden"></div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="mt-8">
+            <div id="results-container" class="bg-white dark:bg-2c2c48 p-6 md:p-8 rounded-2xl shadow-2xl overflow-hidden min-h-60 theme-transition mx-4 md:mx-0">
+                <!-- Content injected here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- TRANSLATION DATA ---
+        const translations = {
+            en: {
+                appTitle: "IRCTC Frontend", from: "From", to: "To", date: "Date", time: "Time", findTrains: "Find Trains",
+                searchResults: "Search Results", availableTrains: "Available Trains", trainFullness: "% Full",
+                departs: "Departs", arrives: "Arrives", clickToViewSeats: "Click to view seats",
+                bookSeatsOn: "Book Seats on", legend: "Seat Availability Legend", available: "Available",
+                booked: "Booked/Unavailable", selected: "Selected", seatsAvailable: "Seats Available",
+                bookNow: "Book Now", seatsSelected: "Total seats selected", 
+                noTrainsFound: "No trains found for this route. Try 'Pune' to 'Mumbai' or 'Delhi' to 'Shimla'!",
+                enterDetails: "Please enter travel details to find trains.",
+                fillRequiredFields: "Please fill in Origin, Destination, and Date.",
+                bookingConfirmed: (count, seats) => `Booking confirmed for ${count} seat(s): ${seats.join(', ')}`,
+                homepage: "Home", pnrStatus: "PNR Status", contactUs: "Contact Us",
+            },
+            hi: {
+                appTitle: "आईआरसीटीसी फ्रंटएंड", from: "से", to: "तक", date: "तारीख", time: "समय", findTrains: "ट्रेन खोजें",
+                searchResults: "खोज परिणाम", availableTrains: "उपलब्ध ट्रेनें", trainFullness: "% भरा",
+                departs: "प्रस्थान", arrives: "आगमन", clickToViewSeats: "सीटें देखने के लिए क्लिक करें",
+                bookSeatsOn: "पर सीटें बुक करें", legend: "सीट उपलब्धता लीजेंड", available: "उपलब्ध",
+                booked: "बुक/अनुपलब्ध", selected: "चयनित", seatsAvailable: "सीटें उपलब्ध",
+                bookNow: "अभी बुक करें", seatsSelected: "कुल चयनित सीटें",
+                noTrainsFound: "इस रूट के लिए कोई ट्रेन नहीं मिली। 'पुणे' से 'मुंबई' या 'दिल्ली' से 'शिमला' आज़माएँ!",
+                enterDetails: "ट्रेन खोजने के लिए यात्रा विवरण दर्ज करें।",
+                fillRequiredFields: "कृपया प्रस्थान, गंतव्य और तारीख भरें।",
+                bookingConfirmed: (count, seats) => `${count} सीट (${seats.join(', ')}) के लिए बुकिंग की पुष्टि हो गई है।`,
+                homepage: "होम", pnrStatus: "पीएनआर स्थिति", contactUs: "हमसे संपर्क करें",
+            },
+            gu: {
+                appTitle: "આઈઆરસીટીસી ફ્રન્ટએન્ડ", from: "થી", to: "સુધી", date: "તારીખ", time: "સમય", findTrains: "ટ્રેન શોધો",
+                searchResults: "શોધ પરિણામો", availableTrains: "ઉપલબ્ધ ટ્રેનો", trainFullness: "% ભરેલું",
+                departs: "પ્રસ્થાન", arrives: "આગમન", clickToViewSeats: "સીટો જોવા માટે ક્લિક કરો",
+                bookSeatsOn: "પર સીટો બુક કરો", legend: "સીટ ઉપલબ્ધતા લીજેન્ડ", available: "ઉપલબ્ધ",
+                booked: "બુક કરેલ/અનુપલબ્ધ", selected: "પસંદ કરેલ", seatsAvailable: "સીટો ઉપલબ્ધ",
+                bookNow: "હવે બુક કરો", seatsSelected: "કુલ પસંદ કરેલ સીટો",
+                noTrainsFound: "આ રૂટ માટે કોઈ ટ્રેન મળી નથી. 'પુણે' થી 'મુંબઈ' અથવા 'દિલ્હી' થી 'શિમલા' અજમાવો!",
+                enterDetails: "ટ્રેન શોધવા માટે પ્રવાસની વિગતો દાખલ કરો.",
+                fillRequiredFields: "કૃપા કરીને પ્રસ્થાન, ગંતવ્ય અને તારીખ ભરો.",
+                bookingConfirmed: (count, seats) => `${count} સીટ ( ${seats.join(', ')} ) માટે બુકિંગ કન્ફર્મ થયું છે.`,
+                homepage: "હોમ", pnrStatus: "પીએનઆર સ્થિતિ", contactUs: "અમારો સંપર્ક કરો",
+            }
+        };
+
+        // --- GLOBAL STATE ---
+        let currentLang = localStorage.getItem('appLang') || 'en';
+        let isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+        let trainsData = [];
+        let displayedTrains = [];
+        let selectedTrain = null;
+        let selectedSeats = [];
+
+        // --- DOM ELEMENTS ---
+        const appBody = document.getElementById('app-body');
+        const searchForm = document.getElementById('search-form');
+        const originInput = document.getElementById('origin-input');
+        const destinationInput = document.getElementById('destination-input');
+        const dateInput = document.getElementById('date-input');
+        const timeInput = document.getElementById('time-input');
+        const resultsContainer = document.getElementById('results-container');
+        const langSelect = document.getElementById('lang-select');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const statusMessage = document.getElementById('status-message');
+
+        /**
+         * Helper to get the translated string.
+         */
+        const translate = (key, ...args) => {
+            const translation = translations[currentLang][key];
+            if (typeof translation === 'function') {
+                return translation(...args);
+            }
+            return translation || translations['en'][key];
+        };
+
+        /**
+         * Utility function to generate dummy seat data based on fullness.
+         */
+        function generateSeats(count, types, trainFullness) {
+            const seats = [];
+            for (let i = 1; i <= count; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                // Seat availability is inversely related to train fullness
+                const isAvailable = Math.random() > trainFullness; 
+                
+                let status;
+                if (!isAvailable && Math.random() > 0.4) { // Higher chance of being booked if full
+                    status = 'booked';
+                } else if (isAvailable) {
+                    status = 'available';
+                } else {
+                    status = 'booked'; 
+                }
+
+                seats.push({
+                    id: i,
+                    type: type,
+                    status: status,
+                });
+            }
+            return seats;
+        }
+
+        /**
+         * Initialize the dummy train data with seats generated based on their fullness.
+         */
+        function initializeTrains() {
+            // Setting a default date to today for the input
+            dateInput.value = new Date().toISOString().split('T')[0];
+
+            const rawTrains = [
+                { id: 1, name: 'Pune Express', from: 'Pune', to: 'Mumbai', departure: '08:00 AM', arrival: '12:30 PM', fullness: 0.2, types: ['Sleeper', 'AC'], count: 60 },
+                { id: 2, name: 'Himalayan Queen', from: 'Delhi', to: 'Shimla', departure: '10:15 AM', arrival: '06:00 PM', fullness: 0.85, types: ['AC'], count: 40 },
+                { id: 3, name: 'Coromandel Express', from: 'Chennai', to: 'Kolkata', departure: '09:00 PM', arrival: '05:00 AM', fullness: 0.5, types: ['Sleeper'], count: 80 },
+                { id: 4, name: 'Shatabdi Express', from: 'Pune', to: 'Mumbai', departure: '06:00 PM', arrival: '10:30 PM', fullness: 0.9, types: ['AC', 'ChairCar'], count: 50 },
+                { id: 5, name: 'Deccan Odyssey', from: 'Pune', to: 'Goa', departure: '07:30 AM', arrival: '04:00 PM', fullness: 0.4, types: ['FirstAC'], count: 30 },
+            ];
+
+            trainsData = rawTrains.map(train => ({
+                ...train,
+                seats: generateSeats(train.count, train.types, train.fullness)
+            }));
+        }
+
+        /**
+         * Updates the global background color based on the selected train's fullness.
+         */
+        function updateDynamicBackground() {
+            let newBgClass = 'bg-gray-50'; // Default light background
+
+            if (selectedTrain) {
+                const fullness = selectedTrain.fullness;
+                // Dynamic color change based on fullness, for a visual indicator
+                if (fullness > 0.85) {
+                    newBgClass = 'bg-red-400/30';
+                } else if (fullness > 0.7) {
+                    newBgClass = 'bg-red-300/30';
+                } else if (fullness > 0.5) {
+                    newBgClass = 'bg-red-200/30';
+                } else {
+                    newBgClass = 'bg-blue-100/30';
+                }
+            }
+            
+            // Apply new background class while keeping theme and transition classes
+            // We use filter to remove the previous dynamic background class (e.g., bg-red-400/30)
+            appBody.className = `${appBody.className.split(' ').filter(c => !c.startsWith('bg-') || c.includes('dark')).join(' ')} ${newBgClass}`;
+        }
+        
+        /**
+         * Toggles between dark and light modes.
+         */
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('isDarkMode', isDarkMode);
+            applyTheme();
+            // Re-render to pick up any text/color changes within content
+            render(); 
+        }
+
+        /**
+         * Applies the current theme state to the body element.
+         */
+        function applyTheme() {
+            if (isDarkMode) {
+                appBody.classList.add('dark');
+                lucide.createIcons(); // Re-render icons for color change if necessary
+                themeIcon.setAttribute('data-lucide', 'moon');
+            } else {
+                appBody.classList.remove('dark');
+                lucide.createIcons();
+                themeIcon.setAttribute('data-lucide', 'sun');
+            }
+        }
+
+        /**
+         * Updates all multilingual elements in the UI.
+         */
+        function updateMultilingualElements() {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                el.textContent = translate(key);
+            });
+            document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-key-placeholder');
+                el.setAttribute('placeholder', translate(key));
+            });
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(el => {
+                const key = el.getAttribute('data-key');
+                const icon = el.querySelector('i');
+                // Ensure icon is preserved when updating text content
+                el.innerHTML = `${icon ? icon.outerHTML : ''} ${translate(key)}`;
+            });
+            lucide.createIcons(); // Re-render Lucide icons
+        }
+
+        /**
+         * Sets the current language.
+         */
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('appLang', lang);
+            updateMultilingualElements();
+            render();
+        }
+
+        /**
+         * Displays a temporary status message.
+         */
+        function displayStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('hidden', 'text-green-600', 'text-red-600', 'dark:text-green-400', 'dark:text-red-400');
+            statusMessage.classList.add(isError ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400');
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 4000);
+        }
+
+        /**
+         * Handles the search form submission.
+         */
+        function handleSearch(e) {
+            e.preventDefault();
+            const origin = originInput.value.trim().toLowerCase();
+            const destination = destinationInput.value.trim().toLowerCase();
+            const date = dateInput.value;
+            // const time = timeInput.value; // Not used for filtering demo data
+
+            selectedTrain = null;
+            selectedSeats = [];
+            updateDynamicBackground();
+
+            if (origin && destination && date) {
+                // In a real app, date and time would be used for filtering.
+                // Here, we just filter by origin/destination for the demo.
+                displayedTrains = trainsData.filter(train => 
+                    train.from.toLowerCase() === origin && 
+                    train.to.toLowerCase() === destination
+                );
+            } else {
+                displayedTrains = [];
+                // Use the new translation key for required fields
+                displayStatus(translate("fillRequiredFields"), true);
+            }
+            
+            render();
+        }
+
+        /**
+         * Handles clicking on a train card to select it and view seats.
+         */
+        function handleTrainSelect(trainId) {
+            const train = displayedTrains.find(t => t.id === trainId);
+            if (selectedTrain && selectedTrain.id === trainId) {
+                selectedTrain = null; // Deselect if already selected
+            } else {
+                selectedTrain = train; // Select new train
+            }
+            selectedSeats = [];
+            updateDynamicBackground();
+            render();
+        }
+
+        /**
+         * Handles clicking on an available seat to select/deselect it.
+         */
+        function handleSeatSelect(seatId) {
+            const seatElement = document.getElementById(`seat-${seatId}`);
+            if (seatElement && seatElement.dataset.status === 'available') {
+                const index = selectedSeats.indexOf(seatId);
+                if (index > -1) {
+                    selectedSeats.splice(index, 1); // Deselect
+                } else {
+                    selectedSeats.push(seatId); // Select
+                }
+                
+                // Re-render the seat map only for performance
+                renderSeatMap();
+            }
+        }
+
+        /**
+         * Handles the final booking attempt.
+         */
+        function handleBookNow() {
+            if (selectedSeats.length > 0) {
+                // Instead of alert(), use the custom status message
+                displayStatus(translate('bookingConfirmed', selectedSeats.length, selectedSeats));
+                // Clear state after "booking"
+                selectedTrain = null;
+                selectedSeats = [];
+                updateDynamicBackground();
+                render();
+            }
+        }
+
+        /**
+         * Generates the HTML string for the train list card.
+         */
+        function renderTrainCard(train) {
+            const isSelected = selectedTrain && selectedTrain.id === train.id;
+            const fullnessClass = train.fullness < 0.5 ? 'bg-green-500' : train.fullness < 0.8 ? 'bg-yellow-500' : 'bg-red-500';
+            // Use selected-train-card for the dynamic visual effect (shimmer)
+            const cardClass = isSelected ? 'selected-train-card ring-4 ring-irctc-red' : 'bg-gray-50 dark:bg-38385e hover:bg-blue-50 dark:hover:bg-444466';
+
+            return `
+                <div
+                    onclick="handleTrainSelect(${train.id})"
+                    class="flex flex-col sm:flex-row justify-between items-center cursor-pointer p-6 rounded-xl shadow-lg 
+                        transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:ring-2 hover:ring-red-100 ${cardClass} theme-transition"
+                >
+                    <div class="text-center sm:text-left mb-4 sm:mb-0">
+                        <h3 class="text-2xl font-bold text-irctc-red">${train.name}</h3>
+                        <p class="text-gray-700 dark:text-c4c4c9">
+                            <span class="font-semibold">${train.from}</span> → <span class="font-semibold">${train.to}</span>
+                        </p>
+                        <p class="text-sm mt-2 text-gray-500 dark:text-a0a0a0">
+                            ${translate('departs')}: <span class="font-bold">${train.departure}</span> | ${translate('arrives')}: <span class="font-bold">${train.arrival}</span>
+                        </p>
+                    </div>
+                    <div class="text-center sm:text-right">
+                        <p class="text-2xl font-extrabold text-gray-800 dark:text-e4e6eb">${Math.round(train.fullness * 100)}${translate('trainFullness')}</p>
+                        <div class="w-32 h-6 rounded-full mt-2 overflow-hidden border-2 border-gray-200 dark:border-444466 shadow-inner">
+                            <div 
+                                class="h-full rounded-full transition-all duration-1000 ease-in-out flex items-center justify-center text-xs font-bold text-white ${fullnessClass}"
+                                style="width: ${train.fullness * 100}%"
+                            >
+                                ${train.fullness > 0.4 ? `${Math.round(train.fullness * 100)}%` : ''}
+                            </div>
+                        </div>
+                        <p class="text-xs mt-1 text-gray-500 italic dark:text-a0a0a0">${translate('clickToViewSeats')}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Helper function to render a single legend item.
+         */
+        function renderLegendItem(className, label) {
+            // 'className' is expected to be a custom seat class like 'seat-available'
+            return `
+                <div class="flex items-center space-x-3 p-2 rounded-lg bg-gray-100 dark:bg-38385e border border-gray-200 dark:border-444466">
+                    <div class="w-5 h-5 rounded-md ${className}"></div>
+                    <span class="text-gray-600 dark:text-c4c4c9 text-sm font-medium">${label}</span>
+                </div>
+            `;
+        }
+
+
+        /**
+         * Generates the HTML string for the interactive seat map.
+         * Renders the full structure including map and booking button.
+         */
+        function renderSeatMap() {
+            if (!selectedTrain) return '';
+
+            const seatsByType = selectedTrain.seats.reduce((acc, seat) => {
+                acc[seat.type] = acc[seat.type] || [];
+                acc[seat.type].push(seat);
+                return acc;
+            }, {});
+
+            let mapHtml = '';
+
+            for (const [type, seats] of Object.entries(seatsByType)) {
+                const availableCount = seats.filter(s => s.status === 'available').length;
+                let seatGridHtml = '';
+
+                seats.forEach(seat => {
+                    const isSelected = selectedSeats.includes(seat.id);
+                    let seatClass = 'seat-item';
+                    let labelClass = 'text-gray-900 dark:text-white';
+
+                    if (seat.status === 'available') {
+                        seatClass += ' seat-available';
+                        if (isSelected) {
+                            seatClass = 'seat-item seat-selected';
+                            labelClass = 'text-white'; // Change text color for selected
+                        }
+                    } else {
+                        seatClass += ' seat-booked';
+                        // Darker text for booked seats
+                        labelClass = 'text-gray-500 dark:text-gray-400';
+                    }
+
+                    seatGridHtml += `
+                        <div 
+                            id="seat-${seat.id}"
+                            data-status="${seat.status}"
+                            onclick="handleSeatSelect(${seat.id})"
+                            class="w-12 h-12 flex items-center justify-center rounded-lg text-sm font-bold ${seatClass}"
+                        >
+                            <span class="${labelClass}">${seat.id}</span>
+                        </div>
+                    `;
+                });
+
+                mapHtml += `
+                    <div class="mb-8 border-t pt-4 border-gray-200 dark:border-444466">
+                        <h4 class="text-xl font-semibold mb-4 text-gray-700 dark:text-c4c4c9">
+                            ${type} Class (<span class="text-irctc-red font-bold">${availableCount}</span> ${translate('seatsAvailable')})
+                        </h4>
+                        <div class="flex flex-wrap gap-4">
+                            ${seatGridHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Return the complete seat map section
+            return `
+                <div id="seat-map-container" class="mt-10">
+                    <h3 class="text-3xl font-bold text-irctc-red mb-6">
+                        ${translate('bookSeatsOn')} ${selectedTrain.name}
+                    </h3>
+                    <div class="p-4 bg-white dark:bg-2c2c48 rounded-2xl shadow-2xl border border-gray-100 dark:border-444466">
+                        <h4 class="text-sm font-medium mb-4 text-gray-500 dark:text-a0a0a0 uppercase tracking-wider">
+                            ${translate('legend')}
+                        </h4>
+                        <div class="flex flex-wrap gap-4 mb-8">
+                            ${renderLegendItem('seat-available', translate('available'))}
+                            ${renderLegendItem('seat-booked', translate('booked'))}
+                            ${renderLegendItem('seat-selected', translate('selected'))}
+                        </div>
+                        ${mapHtml}
+                        <div class="mt-8 text-center pt-6 border-t border-gray-200 dark:border-444466">
+                            <button
+                                onclick="handleBookNow()"
+                                class="px-8 py-4 bg-green-600 text-white font-bold rounded-2xl shadow-xl hover:bg-green-700 transition transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
+                                ${selectedSeats.length === 0 ? 'disabled' : ''}
+                            >
+                                ${translate('bookNow')} ${selectedSeats.length} Seat${selectedSeats.length !== 1 ? 's' : ''}
+                            </button>
+                            <p class="text-sm mt-3 text-gray-500 dark:text-a0a0a0">
+                                ${translate('seatsSelected')}: <span class="font-bold text-irctc-red">${selectedSeats.length}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Main render function to update the DOM based on the state.
+         */
+        function render() {
+            let contentHtml = '';
+
+            if (displayedTrains.length > 0) {
+                contentHtml += `
+                    <h2 class="text-3xl font-bold mb-6 text-gray-700 dark:text-c4c4c9 border-b pb-2">${translate('availableTrains')}</h2>
+                    <div class="grid gap-6">
+                        ${displayedTrains.map(renderTrainCard).join('')}
+                    </div>
+                    ${selectedTrain ? renderSeatMap() : ''}
+                `;
+                resultsContainer.innerHTML = contentHtml;
+                // Since renderSeatMap is a separate call, we must re-create icons if the seat map appeared/disappeared
+                lucide.createIcons();
+            } else if (originInput.value || destinationInput.value) {
+                 // No trains found after search
+                contentHtml = `
+                    <div class="text-center p-12 text-gray-500 dark:text-a0a0a0">
+                        <h2 class="text-2xl font-semibold">
+                            ${translate('noTrainsFound')}
+                        </h2>
+                    </div>
+                `;
+                resultsContainer.innerHTML = contentHtml;
+            } else {
+                // Initial state prompt
+                contentHtml = `
+                    <div class="text-center p-12 text-gray-500 dark:text-a0a0a0">
+                        <h2 class="text-2xl font-semibold">
+                            ${translate('enterDetails')}
+                        </h2>
+                    </div>
+                `;
+                resultsContainer.innerHTML = contentHtml;
+            }
+        }
+
+        // --- EVENT LISTENERS AND INITIALIZATION ---
+        
+        // Expose functions globally for click handlers in generated HTML
+        window.handleTrainSelect = handleTrainSelect;
+        window.handleSeatSelect = handleSeatSelect;
+        window.handleBookNow = handleBookNow;
+        window.renderSeatMap = renderSeatMap; // Expose renderSeatMap for selection updates
+
+        window.onload = () => {
+            initializeTrains();
+            
+            // Set initial language from local storage
+            langSelect.value = currentLang;
+            
+            // Apply initial theme
+            applyTheme();
+
+            // Setup language change listener
+            langSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+
+            // Setup theme toggle listener
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Setup search form listener
+            searchForm.addEventListener('submit', handleSearch);
+            
+            // Render initial UI
+            updateMultilingualElements();
+            render();
+
+            // Initialize Lucide icons
+            lucide.createIcons();
+        };
+
+    </script>
+</body>
+</html>
