@@ -3,74 +3,515 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rail Travel Solutions</title>
-    <link rel="stylesheet" href="style.css">
+    <title>IRCTC Redesign - Final Version</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ================================================= */
+        /* CSS: Variables and Base Styles (Retained for Consistency) */
+        /* ================================================= */
+        :root {
+            /* Dark Mode (Primary Design) */
+            --bg-color: #121212;
+            --main-text: #e0e0e0;
+            --hero-bg: #1a2a4a;
+            --hero-text: #e0e0e0;
+            --hero-accent: #87CEEB;
+            --button-bg: rgba(0, 0, 0, 0.4);
+            
+            /* Widget Colors */
+            --widget-bg: #2b2b2b; 
+            --widget-input-bg: #1e1e1e;
+            --widget-input-border: #555555;
+            --widget-input-text: #e0e0e0;
+            --widget-label-text: #aaaaaa;
+            --primary-button-bg: #4a90e2; 
+            --secondary-button-text: #e0e0e0;
+
+            /* Service Card Colors */
+            --card-bg: #2b2b2b;
+            --card-subtext: #aaaaaa;
+
+            /* Footer Colors */
+            --footer-bg: #1a2a4a;
+            --footer-text: #cccccc;
+            --footer-link: #e0e0e0;
+            --footer-heading: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--main-text);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        
+        /* ----------------------------------------------- */
+        /* Header & Nav */
+        /* ----------------------------------------------- */
+        .header, .main-nav, .hero-content {
+            background-color: var(--hero-bg);
+            color: var(--hero-text);
+        }
+
+        .header { padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .main-nav { padding: 10px 5%; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .nav-list { list-style: none; display: flex; gap: 30px; align-items: center; }
+        .nav-item a { color: var(--hero-text); opacity: 0.8; padding: 5px 0; display: flex; align-items: center; }
+        .nav-item.active a { font-weight: 600; opacity: 1; color: var(--hero-accent); }
+
+        #mode-toggle {
+            background: none; border: none; color: var(--hero-text); font-size: 1.1rem; cursor: pointer; padding: 5px; border-radius: 50%;
+        }
+
+        /* ----------------------------------------------- */
+        /* Hero & Booking Widget */
+        /* ----------------------------------------------- */
+        .hero-content {
+            padding: 60px 5% 40px; 
+            position: relative; 
+        }
+
+        .hero-content h2 { font-size: 3rem; font-weight: 700; margin-bottom: 20px; }
+        .hero-content p { font-size: 1.15rem; font-weight: 300; line-height: 1.5; max-width: 650px; margin-bottom: 40px; }
+        .feature-buttons { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 40px; }
+        .feature-buttons a {
+            padding: 12px 25px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: var(--button-bg); font-weight: 500;
+        }
+
+        .booking-widget-container {
+            width: 100%; 
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--widget-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            z-index: 100;
+        }
+        .booking-tabs { display: flex; margin-bottom: 20px;}
+        .booking-tab {
+            padding: 12px 25px; font-weight: 600; cursor: pointer; color: var(--widget-label-text);
+            border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -1px;
+        }
+        .booking-tab.active { color: var(--primary-button-bg); border-bottom-color: var(--primary-button-bg); }
+
+        .booking-content.hidden { display: none; }
+        .booking-form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group label { display: block; font-size: 0.85rem; color: var(--widget-label-text); margin-bottom: 5px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 15px 10px 40px; border: 1px solid var(--widget-input-border);
+            border-radius: 8px; background-color: var(--widget-input-bg); color: var(--widget-input-text);
+        }
+        .form-group { position: relative; }
+        .form-group .icon {
+            position: absolute; left: 15px; top: 65%; transform: translateY(-50%); color: var(--widget-label-text); pointer-events: none;
+        }
+        .swap-icon {
+            position: absolute; right: 15px; top: 65%; transform: translateY(-50%); color: var(--primary-button-bg); cursor: pointer;
+        }
+        .search-train-btn, .check-pnr-btn {
+            grid-column: 1 / -1; 
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-button-bg);
+            color: var(--hero-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        #check-pnr .booking-form-grid {
+            grid-template-columns: 1fr;
+        }
+        #check-pnr .form-group .icon {
+            top: 50%;
+        }
+
+        /* ----------------------------------------------- */
+        /* Service Cards Grid (The fix for colorful icons) */
+        /* ----------------------------------------------- */
+        .services-section {
+            padding: 60px 5% 60px; 
+            text-align: center;
+        }
+        .services-section h2 { font-size: 2rem; margin-bottom: 10px; }
+        .services-section p { color: var(--card-subtext); margin-bottom: 40px; }
+        .card-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: left;
+        }
+        .service-card {
+            background-color: var(--card-bg); color: var(--main-text); padding: 25px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); transition: transform 0.2s; height: 100%;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        .service-card .icon-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .service-card i {
+            /* Basic Icon Styling */
+            font-size: 1.5rem;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FFFFFF; /* White icon font color */
+            margin-right: 15px;
+            transition: background-color 0.2s;
+        }
+        
+        /* RESTORING COLORFUL ICON BACKGROUNDS */
+        .icon-blue-light { background-color: #3498DB; } /* Live Train Status, Explore Journeys, Luggage */
+        .icon-red-dark { background-color: #E74C3C; } /* Special Arrangements */
+        .icon-green-dark { background-color: #2ECC71; } /* Food, Ask Anything */
+        .icon-pink-light { background-color: #E91E63; } /* IRCTC App */
+        .icon-teal-dark { background-color: #008080; } /* Journey Planner */
+        .icon-yellow-dark { background-color: #F1C40F; } /* Easy Payments */
+        .icon-light-blue { background-color: #3498DB; } /* Link with Schemes */
+        
+        /* ----------------------------------------------- */
+        /* Footer */
+        /* ----------------------------------------------- */
+        .site-footer {
+            background-color: var(--footer-bg); color: var(--footer-text); padding: 40px 5%; font-size: 0.9rem;
+        }
+        .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+        .footer-col h4 { color: var(--footer-heading); margin-bottom: 20px; font-weight: 600; font-size: 1.1rem; }
+        .footer-col a, .footer-col p { display: block; margin-bottom: 10px; color: var(--footer-text); transition: color 0.2s; }
+        .footer-col a:hover { color: var(--footer-link); }
+
+        /* ----------------------------------------------- */
+        /* RESPONSIVENESS */
+        /* ----------------------------------------------- */
+        @media (max-width: 900px) {
+            .booking-form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 550px) {
+            .booking-form-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Rail Travel Solutions</h1>
-            <nav>
-                <button class="nav-btn active" data-section="review-portal">Reviews & Complaints</button>
-                <button class="nav-btn" data-section="recommendations">Recommendations</button>
-                <button class="nav-btn" data-section="concessions">Concessions</button>
-                <button class="nav-btn" data-section="billing">Billing</button>
-            </nav>
-        </header>
-
-        <main>
-            <section id="review-portal" class="active">
-                <h2>Verified Review & Complaint Portal</h2>
-                <form id="complaint-form">
-                    <label for="pnr">PNR Number:</label>
-                    <input type="text" id="pnr" name="pnr" required>
-                    <label for="review">Your Review/Complaint:</label>
-                    <textarea id="review" name="review" rows="5" required></textarea>
-                    <button type="submit">Submit</button>
-                </form>
-                <div id="reviews-display">
-                    </div>
-            </section>
-
-            <section id="recommendations">
-                <h2>Personalized Route Recommendations</h2>
-                <p>Based on your travel history and community feedback.</p>
-                <div class="recommendation-form">
-                    <label for="from-dest">From:</label>
-                    <input type="text" id="from-dest" placeholder="e.g., New Delhi">
-
-                    <label for="to-dest">To:</label>
-                    <input type="text" id="to-dest" placeholder="e.g., Mumbai">
-
-                    <button id="check-rating-btn">Check Route Rating</button>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-section">
+                <div class="ir-logo"><i class="fas fa-train"></i></div>
+                <div class="ir-branding">
+                    <h1>Indian Railways</h1>
+                    <p>Ministry of Railways, Gov't. of India</p>
                 </div>
-                <div id="recommendation-result">
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="irctc-title">IRCTC</span>
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <ul class="nav-list">
+            <li class="nav-item lang-dropdown">
+                <i class="fas fa-globe"></i> <span>தமிழ்</span> <i class="fas fa-caret-down"></i>
+            </li>
+            <li class="nav-item active"><a href="#"><i class="fas fa-home"></i> Home</a></li>
+            <li class="nav-item"><a href="#"><i class="fas fa-star"></i> Review Window</a></li>
+            <li class="nav-item"><a href="#"><i class="fas fa-history"></i> Past Journeys</a></li>
+            <li class="nav-item"><a href="#"><i class="fas fa-headset"></i> Support</a></li>
+            <li class="nav-item">
+                <button id="mode-toggle" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+            </li>
+            <li class="nav-item"><a href="#"><i class="fas fa-user-circle"></i> Profile</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-content">
+        <h2>Welcome to IRCTC</h2>
+        <p>Your gateway to seamless railway booking and travel experiences across India. Book tickets, track trains, and explore the incredible journey that awaits.</p>
+        
+        <div class="feature-buttons">
+            <a href="#">24/7 Booking</a>
+            <a href="#">Real-time Updates</a>
+            <a href="#">Secure Payments</a>
+            <a href="#">Mobile Ready</a>
+        </div>
+
+        <div class="booking-widget-container">
+            <div class="booking-tabs">
+                <button class="booking-tab active" data-tab="book-ticket">Book Ticket</button>
+                <button class="booking-tab" data-tab="check-pnr">Check PNR</button>
+            </div>
+
+            <div id="book-ticket" class="booking-content">
+                <div class="booking-form-grid">
+                    <div class="form-group">
+                        <label for="from-station">From Station</label>
+                        <input type="text" id="from-station" value="delhi" placeholder="Enter From Station">
+                        <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
                     </div>
-                <div id="recommendations-list">
+                    <div class="form-group">
+                        <label for="to-station">To Station</label>
+                        <input type="text" id="to-station" value="mumbai" placeholder="Enter To Station">
+                        <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+                        <span class="swap-icon" title="Swap Stations"><i class="fas fa-exchange-alt"></i></span>
                     </div>
-            </section>
-
-            <section id="concessions">
-                <h2>Automated Concessions</h2>
-                <p>Apply for EWS and other government scheme discounts.</p>
-                <button id="apply-concession">Check Eligibility</button>
-                <div id="concession-status"></div>
-            </section>
-
-            <section id="billing">
-                <h2>LTC & Billing Simplification</h2>
-                <p>Access past bills and compare fares.</p>
-                <div id="billing-details">
+                    <div class="form-group">
+                        <label for="journey-date">Journey Date</label>
+                        <input type="date" id="journey-date" value="2025-09-27">
+                        <span class="icon"><i class="fas fa-calendar-alt"></i></span>
                     </div>
-            </section>
-        </main>
+                    <div class="form-group">
+                        <label for="passengers">Passengers</label>
+                        <input type="text" id="passengers" value="1 Passenger">
+                        <span class="icon"><i class="fas fa-user-friends"></i></span>
+                    </div>
+                </div>
+                <button class="search-train-btn">Search Trains</button>
+            </div>
 
-        <footer>
-            <p>&copy; 2025 Rail Solutions</p>
-        </footer>
-    </div>
+            <div id="check-pnr" class="booking-content hidden">
+                <div class="booking-form-grid">
+                    <div class="form-group">
+                        <label for="pnr-number">PNR Number</label>
+                        <input type="text" id="pnr-number" placeholder="Enter your 10-digit PNR">
+                        <span class="icon"><i class="fas fa-ticket-alt"></i></span>
+                    </div>
+                </div>
+                <button class="search-train-btn">Check PNR Status</button>
+            </div>
+        </div>
+    </section>
 
-    <script src="script.js"></script>
+    <section class="services-section">
+        <h2>Our Services</h2>
+        <p>Comprehensive railway services at your fingertips</p>
+        
+        <div class="card-grid">
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-wheelchair icon-red-dark"></i> 
+                    <div><h4>Special Arrangements for Specially-abled</h4></div>
+                </div>
+                <p>Book assistance and facilities for differently-abled passengers</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-utensils icon-green-dark"></i> 
+                    <div><h4>Food</h4></div>
+                </div>
+                <p>Order delicious meals for your journey</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-location-arrow icon-blue-light"></i> 
+                    <div><h4>Live Train Status</h4></div>
+                </div>
+                <p>Track your train in real-time</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-map-marker-alt icon-blue-light"></i> 
+                    <div><h4>Explore Journeys</h4></div>
+                </div>
+                <p>Discover new destinations and travel packages</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-mobile-alt icon-pink-light"></i> 
+                    <div><h4>IRCTC App</h4></div>
+                </div>
+                <p>Download the official mobile app</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-calendar-check icon-teal-dark"></i> 
+                    <div><h4>Journey Planner</h4></div>
+                </div>
+                <p>Plan your perfect railway journey</p>
+            </a>
+
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-wallet icon-yellow-dark"></i> 
+                    <div><h4>Easy Payments</h4></div>
+                </div>
+                <p>Multiple secure payment options</p>
+            </a>
+            
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-box-open icon-blue-light"></i> 
+                    <div><h4>Luggage Services</h4></div>
+                </div>
+                <p>Book parcel and luggage services</p>
+            </a>
+
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-file-alt icon-light-blue"></i> 
+                    <div><h4>Link with Government Schemes</h4></div>
+                </div>
+                <p>Access various government railway schemes and benefits</p>
+            </a>
+
+            <a href="#" class="service-card">
+                <div class="icon-header">
+                    <i class="fas fa-comment-dots icon-green-dark"></i> 
+                    <div><h4>Ask Anything</h4></div>
+                </div>
+                <p>Get instant answers to your railway queries</p>
+            </a>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-grid container">
+            
+            <div class="footer-col">
+                <h4>IRCTC</h4>
+                <p>Indian Railway Catering and Tourism Corporation Limited - Your trusted partner for railway bookings and travel services.</p>
+                <div class="social-icons" style="margin-top: 15px;">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="#">Book Tickets</a>
+                <a href="#">PNR Status</a>
+                <a href="#">Train Schedule</a>
+                <a href="#">Seat Availability</a>
+                <a href="#">Refund Rules</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="#">Railway Tourism</a>
+                <a href="#">Food Booking</a>
+                <a href="#">Hotel Booking</a>
+                <a href="#">Travel Insurance</a>
+                <a href="#">Retiring Room</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <p class="contact-info"><i class="fas fa-phone"></i> 139 (Railway Enquiry)</p>
+                <p class="contact-info"><i class="fas fa-envelope"></i> care@irctc.co.in</p>
+                <p class="contact-info" style="margin-top: 20px;"><i class="fas fa-map-marker-alt"></i> IRCTC Corporate Office<br>11th Floor, Statesman House<br>New Delhi - 110001</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const modeToggle = document.getElementById('mode-toggle');
+            const icon = modeToggle.querySelector('i');
+
+            // --- Dark/Light Mode Toggle FIX ---
+            modeToggle.addEventListener('click', () => {
+                // Toggle the 'light-mode' class to switch between the two CSS variable sets
+                const isLightMode = body.classList.toggle('light-mode');
+                
+                if (isLightMode) {
+                    // Switched to Light Mode
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    // Switched to Dark Mode
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+            
+            // Set initial icon state (CSS defaults to dark mode, so we show the moon)
+            icon.classList.add('fa-moon');
+
+
+            // --- Booking Tabs Functionality ---
+            const bookingTabs = document.querySelectorAll('.booking-tab');
+            const bookingContents = document.querySelectorAll('.booking-content');
+
+            bookingTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Deactivate all tabs and hide all content
+                    bookingTabs.forEach(t => t.classList.remove('active'));
+                    bookingContents.forEach(c => c.classList.add('hidden'));
+
+                    // Activate clicked tab and show corresponding content
+                    tab.classList.add('active');
+                    const targetTab = tab.dataset.tab;
+                    document.getElementById(targetTab).classList.remove('hidden');
+                });
+            });
+
+            // --- Swap Stations Functionality ---
+            const swapIcon = document.querySelector('.swap-icon');
+            const fromStationInput = document.getElementById('from-station');
+            const toStationInput = document.getElementById('to-station');
+
+            if (swapIcon) {
+                swapIcon.addEventListener('click', () => {
+                    let temp = fromStationInput.value;
+                    fromStationInput.value = toStationInput.value;
+                    toStationInput.value = temp;
+                });
+            }
+
+            // --- Form Submission Simulation (for both tabs) ---
+            document.querySelector('#book-ticket .search-train-btn').addEventListener('click', () => {
+                const from = fromStationInput.value;
+                const to = toStationInput.value;
+                const date = document.getElementById('journey-date').value;
+                alert(`[Book Ticket] Searching trains from ${from} to ${to} on ${date}.`);
+            });
+
+            document.querySelector('#check-pnr .search-train-btn').addEventListener('click', () => {
+                const pnr = document.getElementById('pnr-number').value;
+                alert(`[Check PNR] Checking status for: ${pnr}.`);
+            });
+        });
+    </script>
 </body>
 </html>
