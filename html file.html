@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rail Travel Solutions</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Rail Travel Solutions</h1>
+            <nav>
+                <button class="nav-btn active" data-section="review-portal">Reviews & Complaints</button>
+                <button class="nav-btn" data-section="recommendations">Recommendations</button>
+                <button class="nav-btn" data-section="concessions">Concessions</button>
+                <button class="nav-btn" data-section="billing">Billing</button>
+            </nav>
+        </header>
+
+        <main>
+            <section id="review-portal" class="active">
+                <h2>Verified Review & Complaint Portal</h2>
+                <form id="complaint-form">
+                    <label for="pnr">PNR Number:</label>
+                    <input type="text" id="pnr" name="pnr" required>
+                    <label for="review">Your Review/Complaint:</label>
+                    <textarea id="review" name="review" rows="5" required></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+                <div id="reviews-display">
+                    </div>
+            </section>
+
+            <section id="recommendations">
+                <h2>Personalized Route Recommendations</h2>
+                <p>Based on your travel history and community feedback.</p>
+                <div class="recommendation-form">
+                    <label for="from-dest">From:</label>
+                    <input type="text" id="from-dest" placeholder="e.g., New Delhi">
+
+                    <label for="to-dest">To:</label>
+                    <input type="text" id="to-dest" placeholder="e.g., Mumbai">
+
+                    <button id="check-rating-btn">Check Route Rating</button>
+                </div>
+                <div id="recommendation-result">
+                    </div>
+                <div id="recommendations-list">
+                    </div>
+            </section>
+
+            <section id="concessions">
+                <h2>Automated Concessions</h2>
+                <p>Apply for EWS and other government scheme discounts.</p>
+                <button id="apply-concession">Check Eligibility</button>
+                <div id="concession-status"></div>
+            </section>
+
+            <section id="billing">
+                <h2>LTC & Billing Simplification</h2>
+                <p>Access past bills and compare fares.</p>
+                <div id="billing-details">
+                    </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Rail Solutions</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
