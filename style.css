@@ -1,0 +1,247 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef1f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #0056b3, #007bff);
+    color: #fff;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.nav-btn {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin: 0 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    border-radius: 5px;
+}
+
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn.active {
+    background-color: #004085;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+main {
+    padding: 20px 40px;
+}
+
+section {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: #0056b3;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+form label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+button[type="submit"], #apply-concession, #check-rating-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    margin-top: 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#reviews-display .review {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid #007bff;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+
+.recommendation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.recommendation-form label {
+    font-weight: bold;
+}
+
+.recommendation-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#recommendation-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-left: 4px solid #007bff;
+    background-color: #e9f5ff;
+    border-radius: 5px;
+    display: none;
+}
+
+#recommendation-result.show {
+    display: block;
+}
+
+#recommendation-result p {
+    margin: 5px 0;
+}
+
+#recommendations-list p {
+    background-color: #e9f5ff;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#concession-status {
+    margin-top: 1rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #343a40;
+    color: #f8f9fa;
+    border-top: 1px solid #ddd;
+}
+
+/* Styling for individual billing cards */
+.billing-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.billing-card:hover {
+    transform: translateY(-5px);
+}
+
+.billing-card h4 {
+    margin: 0 0 10px 0;
+    color: #004d8c;
+    font-size: 1.25rem;
+}
+
+.billing-card p {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.billing-card .fare-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.billing-card .fare-details p strong {
+    color: #343a40;
+}
+
+.billing-card .billing-status {
+    font-weight: bold;
+    color: #28a745; /* Green for success */
+    margin-top: 10px;
+}
+
+.billing-card .download-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.billing-card .download-btn:hover {
+    background-color: #0056b3;
+}
